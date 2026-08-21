@@ -106,11 +106,14 @@ You can assign your preferred shortcut under **Settings → Hotkeys**.
 Vault Shell does not require an account, collect telemetry, or make network requests on its
 own.
 
-The terminal runs with the same permissions as Obsidian. It reads system shell information
-outside the vault and launches a real shell at the vault root. Commands entered in that shell
-can read, change, or delete files anywhere your user account can access, and they may connect
-to the network. Review commands before running them and use a test vault while evaluating the
-plugin.
+To discover installed shells, Vault Shell uses the Node.js filesystem API to read
+`/etc/shells` and check whether shell paths found through `$SHELL` and `$PATH` are executable.
+These are read-only checks outside the vault; Vault Shell does not modify those files.
+
+The terminal itself runs with the same permissions as Obsidian and launches a real shell at
+the vault root. Commands entered in that shell can read, change, or delete files anywhere your
+user account can access, and they may connect to the network. Review commands before running
+them and use a test vault while evaluating the plugin.
 
 ## Troubleshooting native `node-pty`
 
