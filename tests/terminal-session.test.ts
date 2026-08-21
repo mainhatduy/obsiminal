@@ -210,7 +210,7 @@ describe("TerminalSession", () => {
     expect(session.start()).toBe(false);
     expect(session.state).toEqual({ status: "error", message: "native module mismatch" });
     expect(surface.write).toHaveBeenCalledWith(
-      "\r\n[Obsiminal could not start: native module mismatch]\r\n",
+      "\r\n[Vault Shell could not start: native module mismatch]\r\n",
     );
   });
 

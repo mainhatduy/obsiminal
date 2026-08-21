@@ -1,21 +1,20 @@
-# Obsiminal
+# Vault Shell
 
 An interactive terminal that runs inside your Obsidian workspace.
 
-Obsiminal opens a real PTY-backed shell in a standard Obsidian pane. Dock it beside your
+Vault Shell opens a real PTY-backed shell in a standard Obsidian pane. Dock it beside your
 notes, move it to the bottom of the workspace, or keep it as a tab wherever it fits your
 workflow.
 
-![Obsiminal terminal running inside an Obsidian workspace](images/demo.png)
+![Vault Shell terminal running inside an Obsidian workspace](images/demo.png)
 
 > [!IMPORTANT]
-> Obsiminal 0.1.0 is an early macOS-only release that must be installed manually. It does
+> Vault Shell 0.1.0 is an early macOS-only release that must be installed manually. It does
 > not support Obsidian Mobile and is not yet available in the Community Plugins directory.
 
 ## Features
 
-- Open or focus the terminal with <kbd>Ctrl</kbd> + <kbd>`</kbd>, a ribbon icon, or the
-  command palette.
+- Open or focus the terminal with a ribbon icon or the command palette.
 - Start each shell in the root directory of the current vault.
 - Discover installed shells from `$SHELL`, `/etc/shells`, and `$PATH`.
 - Create, switch between, and close multiple terminal sessions from a vertical manager.
@@ -46,7 +45,7 @@ xcode-select --install
 
 ## Installation
 
-Obsiminal is not currently distributed through Obsidian's Community Plugins directory.
+Vault Shell is not currently distributed through Obsidian's Community Plugins directory.
 Install it from source in a test vault:
 
 ```sh
@@ -61,7 +60,7 @@ Then:
 
 1. Open **Settings → Community plugins** in Obsidian.
 2. Turn on community plugins if they are disabled.
-3. Select **Obsiminal** and enable it.
+3. Select **Vault Shell** and enable it.
 
 The plugin directory must remain named `obsiminal`. Keep `node_modules/node-pty` in the
 plugin directory because the native PTY module is intentionally loaded outside the bundled
@@ -78,8 +77,7 @@ npm run native:prepare
 Open the terminal in any of the following ways:
 
 - Select the terminal icon in the ribbon.
-- Press <kbd>Ctrl</kbd> + <kbd>`</kbd>.
-- Run **Obsiminal: Open or focus terminal** from the command palette.
+- Run **Vault Shell: Open or focus terminal** from the command palette.
 
 Once the terminal is open:
 
@@ -93,19 +91,19 @@ Once the terminal is open:
   the default width.
 - Select **×** on a terminal row to close that session and terminate its process.
 
-The default shortcut can be changed under **Settings → Hotkeys**.
+You can assign your preferred shortcut under **Settings → Hotkeys**.
 
 ### Commands
 
-| Command                               | Default hotkey                 | Description                                          |
-| ------------------------------------- | ------------------------------ | ---------------------------------------------------- |
-| **Obsiminal: Open or focus terminal** | <kbd>Ctrl</kbd> + <kbd>`</kbd> | Opens the terminal pane or focuses the existing one. |
-| **Obsiminal: New terminal**           | None                           | Opens the pane and creates a new terminal session.   |
-| **Obsiminal: Split terminal**         | None                           | Splits the active terminal into another pane.        |
+| Command                                 | Default hotkey | Description                                          |
+| --------------------------------------- | -------------- | ---------------------------------------------------- |
+| **Vault Shell: Open or focus terminal** | None           | Opens the terminal pane or focuses the existing one. |
+| **Vault Shell: New terminal**           | None           | Opens the pane and creates a new terminal session.   |
+| **Vault Shell: Split terminal**         | None           | Splits the active terminal into another pane.        |
 
 ## Security and privacy
 
-Obsiminal does not require an account, collect telemetry, or make network requests on its
+Vault Shell does not require an account, collect telemetry, or make network requests on its
 own.
 
 The terminal runs with the same permissions as Obsidian. It reads system shell information
@@ -169,7 +167,7 @@ build. The build writes the Obsidian plugin artifacts to the repository root:
 
 ### Project structure
 
-- `ObsiminalPlugin` manages commands, the workspace view, and terminal sessions.
+- `VaultShellPlugin` manages commands, the workspace view, and terminal sessions.
 - `TerminalSession` owns the PTY process and its lifecycle.
 - `XtermSurface` manages the xterm.js interface, scrollback, and theme.
 - `TerminalView` renders shell selection and session tabs.
@@ -190,4 +188,4 @@ Bug reports and pull requests are welcome. Before opening a pull request, run
 
 ## License
 
-Obsiminal is available under the [MIT License](LICENSE).
+Vault Shell is available under the [MIT License](LICENSE).

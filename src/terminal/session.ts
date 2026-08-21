@@ -76,7 +76,7 @@ export class TerminalSession {
       return true;
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      this.options.surface.write(`\r\n[Obsiminal could not start: ${message}]\r\n`);
+      this.options.surface.write(`\r\n[Vault Shell could not start: ${message}]\r\n`);
       this.setState({ status: "error", message });
       return false;
     }

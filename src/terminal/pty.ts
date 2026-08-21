@@ -15,7 +15,7 @@ export function createNodePtySpawner(modulePath = "node-pty"): PtySpawner {
   return (executable, args, options): PtyProcess => {
     // Keep the native dependency outside the bundle. Loading it lazily lets the
     // plugin show a useful error instead of crashing during plugin startup.
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    // eslint-disable-next-line @typescript-eslint/no-require-imports -- Load the native module only when a terminal starts so plugin startup can recover from ABI errors.
     const nodePty = require(modulePath) as NodePtyModule;
     const spawnOptions: IPtyForkOptions | IWindowsPtyForkOptions = {
       cols: options.cols,

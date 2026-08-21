@@ -24,7 +24,7 @@ if (process.platform !== "win32") {
 
   if (prepared === 0) {
     console.warn(
-      `Obsiminal: no node-pty spawn-helper was found for ${process.platform}-${process.arch}.`,
+      `Vault Shell: no node-pty spawn-helper was found for ${process.platform}-${process.arch}.`,
     );
   }
 }

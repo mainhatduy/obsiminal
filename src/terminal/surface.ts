@@ -7,19 +7,18 @@ const FALLBACK_FONT = "Menlo, Monaco, 'Courier New', monospace";
 
 export class XtermSurface implements TerminalSurface {
   private readonly fitAddon = new FitAddon();
-  private readonly host = document.createElement("div");
+  private readonly host = createDiv({ cls: "obsiminal-terminal-host" });
   private readonly terminal: Terminal;
   private opened = false;
 
   constructor() {
-    this.host.className = "obsiminal-terminal-host";
     this.terminal = new Terminal({
       allowTransparency: true,
       cursorBlink: true,
       fontFamily: FALLBACK_FONT,
       fontSize: 13,
       scrollback: 5_000,
-      theme: readObsidianTheme(),
+      theme: readObsidianTheme(this.host.ownerDocument),
     });
     this.terminal.loadAddon(this.fitAddon);
   }
@@ -83,8 +82,10 @@ export class XtermSurface implements TerminalSurface {
   }
 
   updateTheme(): void {
-    this.terminal.options.theme = readObsidianTheme();
-    this.terminal.options.fontFamily = readCssVariable("--font-monospace") || FALLBACK_FONT;
+    const ownerDocument = this.host.ownerDocument;
+    this.terminal.options.theme = readObsidianTheme(ownerDocument);
+    this.terminal.options.fontFamily =
+      readCssVariable(ownerDocument, "--font-monospace") || FALLBACK_FONT;
   }
 
   write(data: string): void {
@@ -92,20 +93,21 @@ export class XtermSurface implements TerminalSurface {
   }
 }
 
-function readObsidianTheme(): ITheme {
+function readObsidianTheme(ownerDocument: Document): ITheme {
   return {
-    background: readCssVariable("--background-primary") || "#1e1e1e",
-    cursor: readCssVariable("--text-accent") || "#cccccc",
-    cursorAccent: readCssVariable("--background-primary") || "#1e1e1e",
-    foreground: readCssVariable("--text-normal") || "#cccccc",
-    selectionBackground: readCssVariable("--text-selection") || "#264f78",
+    background: readCssVariable(ownerDocument, "--background-primary") || "#1e1e1e",
+    cursor: readCssVariable(ownerDocument, "--text-accent") || "#cccccc",
+    cursorAccent: readCssVariable(ownerDocument, "--background-primary") || "#1e1e1e",
+    foreground: readCssVariable(ownerDocument, "--text-normal") || "#cccccc",
+    selectionBackground: readCssVariable(ownerDocument, "--text-selection") || "#264f78",
   };
 }
 
-function readCssVariable(name: string): string {
-  if (!document.body) {
+function readCssVariable(ownerDocument: Document, name: string): string {
+  const ownerWindow = ownerDocument.defaultView;
+  if (!ownerDocument.body || !ownerWindow) {
     return "";
   }
 
-  return getComputedStyle(document.body).getPropertyValue(name).trim();
+  return ownerWindow.getComputedStyle(ownerDocument.body).getPropertyValue(name).trim();
 }

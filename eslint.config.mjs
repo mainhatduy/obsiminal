@@ -1,14 +1,19 @@
-import eslint from "@eslint/js";
+import obsidianmd from "eslint-plugin-obsidianmd";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
   {
     ignores: [".husky/", "coverage/", "main.js", "node_modules/", "styles.css"],
   },
-  eslint.configs.recommended,
-  ...tseslint.configs.recommended,
+  ...obsidianmd.configs.recommended,
   {
-    files: ["src/**/*.ts", "tests/**/*.ts"],
+    files: ["**/*.ts"],
+    languageOptions: {
+      parserOptions: {
+        project: "./tsconfig.json",
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
     rules: {
       "@typescript-eslint/consistent-type-imports": "error",
       "@typescript-eslint/no-explicit-any": "error",

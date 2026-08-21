@@ -17,7 +17,7 @@ interface ManagedTerminal {
   session: TerminalSession;
 }
 
-export default class ObsiminalPlugin extends Plugin {
+export default class VaultShellPlugin extends Plugin {
   private activeTerminalId: string | null = null;
   private attachedContainer: HTMLElement | null = null;
   private readonly attachedPanes = new Map<string, HTMLElement>();
@@ -38,7 +38,6 @@ export default class ObsiminalPlugin extends Plugin {
     this.addCommand({
       id: "open-or-focus-terminal",
       name: "Open or focus terminal",
-      hotkeys: [{ modifiers: ["Ctrl"], key: "`" }],
       callback: () => {
         void this.openOrFocusTerminal();
       },
@@ -86,7 +85,6 @@ export default class ObsiminalPlugin extends Plugin {
     this.attachedPanes.clear();
     this.attachedContainer = null;
     this.attachedView = null;
-    this.app.workspace.detachLeavesOfType(TERMINAL_VIEW_TYPE);
   }
 
   async attachView(view: TerminalView, container: HTMLElement): Promise<void> {
@@ -293,7 +291,7 @@ export default class ObsiminalPlugin extends Plugin {
     if (state.status === "error") {
       const terminal = this.terminals.find((candidate) => candidate.id === id);
       new Notice(
-        `Obsiminal could not start ${terminal?.label ?? "the terminal"}: ${state.message}`,
+        `Vault Shell could not start ${terminal?.label ?? "the terminal"}: ${state.message}`,
       );
     }
   }
@@ -374,7 +372,7 @@ export default class ObsiminalPlugin extends Plugin {
   private showError(error: unknown): void {
     const message = error instanceof Error ? error.message : String(error);
     this.attachedView?.showError(message);
-    new Notice(`Obsiminal: ${message}`);
+    new Notice(`Vault Shell: ${message}`);
   }
 
   private async openOrFocusTerminal(): Promise<void> {

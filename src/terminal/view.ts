@@ -1,6 +1,6 @@
 import { ItemView, Menu, setIcon, type WorkspaceLeaf } from "obsidian";
 
-import type ObsiminalPlugin from "../main";
+import type VaultShellPlugin from "../main";
 import type { TerminalSessionState, TerminalSummary } from "./contracts";
 
 export const TERMINAL_VIEW_TYPE = "obsiminal-terminal";
@@ -13,7 +13,7 @@ export class TerminalView extends ItemView {
 
   constructor(
     leaf: WorkspaceLeaf,
-    private readonly plugin: ObsiminalPlugin,
+    private readonly plugin: VaultShellPlugin,
   ) {
     super(leaf);
   }
