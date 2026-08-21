@@ -1,0 +1,338 @@
+@import "@xterm/xterm/css/xterm.css";
+
+.obsiminal-view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0;
+  background: var(--background-primary);
+}
+
+.obsiminal-status {
+  flex: 0 0 auto;
+  padding: var(--size-4-2) var(--size-4-3);
+  border-bottom: 1px solid var(--background-modifier-border);
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+}
+
+.obsiminal-terminal-workspace {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.obsiminal-terminal-manager {
+  display: flex;
+  flex: 0 0 clamp(132px, 22%, 184px);
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  background: var(--background-secondary);
+}
+
+.obsiminal-manager-divider {
+  position: relative;
+  z-index: 3;
+  flex: 0 0 5px;
+  width: 5px;
+  cursor: col-resize;
+  outline: none;
+  touch-action: none;
+}
+
+.obsiminal-manager-divider::after {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 2px;
+  width: 1px;
+  background: var(--background-modifier-border);
+  content: "";
+  transition: background-color 100ms ease;
+}
+
+.obsiminal-manager-divider:hover::after,
+.obsiminal-manager-divider:focus-visible::after,
+.obsiminal-manager-divider.is-resizing::after {
+  background: var(--interactive-accent);
+}
+
+.obsiminal-toolbar {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: flex-end;
+  height: 32px;
+  padding: 0 var(--size-2-2);
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.obsiminal-toolbar-actions,
+.obsiminal-terminal-tab-actions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 1px;
+}
+
+.obsiminal-create-control {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  border-radius: 6px;
+  background: var(--background-modifier-hover);
+}
+
+.obsiminal-view button.obsiminal-icon-button,
+.obsiminal-view button.obsiminal-terminal-tab-select,
+.obsiminal-view button.obsiminal-terminal-tab-split,
+.obsiminal-view button.obsiminal-terminal-tab-close {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-muted);
+  box-shadow: none;
+  font: inherit;
+}
+
+.obsiminal-view button.obsiminal-icon-button:hover,
+.obsiminal-view button.obsiminal-terminal-tab-split:hover,
+.obsiminal-view button.obsiminal-terminal-tab-close:hover {
+  background: var(--background-modifier-hover);
+  color: var(--text-normal);
+}
+
+.obsiminal-view button.obsiminal-icon-button {
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  padding: 5px;
+}
+
+.obsiminal-view .obsiminal-create-control button.obsiminal-icon-button {
+  border-radius: 0;
+}
+
+.obsiminal-view .obsiminal-create-control button.obsiminal-icon-button:hover {
+  background: var(--background-modifier-active-hover);
+}
+
+.obsiminal-view .obsiminal-create-control button.obsiminal-new-terminal {
+  width: 28px;
+}
+
+.obsiminal-view button.obsiminal-profile-menu {
+  width: 20px;
+  padding: 6px 4px;
+  border-left: 1px solid var(--background-modifier-border);
+}
+
+.obsiminal-terminal-tabs {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  min-height: 0;
+  padding: var(--size-2-2);
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.obsiminal-terminal-group {
+  position: relative;
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.obsiminal-terminal-group + .obsiminal-terminal-group {
+  margin-top: 2px;
+}
+
+.obsiminal-terminal-group.is-split {
+  padding-left: 12px;
+}
+
+.obsiminal-terminal-group.is-split::before {
+  position: absolute;
+  top: 14px;
+  bottom: 14px;
+  left: 5px;
+  width: 1px;
+  background: var(--text-muted);
+  content: "";
+  pointer-events: none;
+}
+
+.obsiminal-terminal-tab {
+  position: relative;
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  min-width: 0;
+  height: 30px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: var(--text-muted);
+}
+
+.obsiminal-terminal-group.is-split .obsiminal-terminal-tab::before {
+  position: absolute;
+  top: 14px;
+  left: -7px;
+  width: 7px;
+  height: 1px;
+  background: var(--text-muted);
+  content: "";
+  pointer-events: none;
+}
+
+.obsiminal-terminal-tab:hover {
+  background: var(--background-modifier-hover);
+}
+
+.obsiminal-terminal-tab.is-active {
+  border-color: var(--interactive-accent);
+  background: var(--background-modifier-hover);
+  color: var(--text-normal);
+}
+
+.obsiminal-terminal-tab.has-ended .obsiminal-terminal-tab-icon {
+  color: var(--text-warning);
+}
+
+.obsiminal-view button.obsiminal-terminal-tab-select {
+  flex: 1 1 auto;
+  justify-content: flex-start;
+  gap: var(--size-2-2);
+  width: 0;
+  height: 28px;
+  padding: 0 var(--size-2-3);
+  overflow: hidden;
+  color: inherit;
+  font-size: var(--font-ui-smaller);
+  font-weight: var(--font-normal);
+  white-space: nowrap;
+}
+
+.obsiminal-view button.obsiminal-terminal-tab-select:hover {
+  background: transparent;
+  color: var(--text-normal);
+}
+
+.obsiminal-terminal-tab-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  opacity: 0.8;
+}
+
+.obsiminal-terminal-tab-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.obsiminal-terminal-tab-actions {
+  padding-right: 2px;
+  opacity: 0;
+}
+
+.obsiminal-terminal-tab:hover .obsiminal-terminal-tab-actions,
+.obsiminal-terminal-tab.is-active .obsiminal-terminal-tab-actions,
+.obsiminal-terminal-tab:focus-within .obsiminal-terminal-tab-actions {
+  opacity: 1;
+}
+
+.obsiminal-view button.obsiminal-terminal-tab-split,
+.obsiminal-view button.obsiminal-terminal-tab-close {
+  width: 22px;
+  height: 22px;
+  padding: 5px;
+}
+
+.obsiminal-terminal-manager svg {
+  width: 15px;
+  height: 15px;
+  stroke-width: 1.8;
+}
+
+.obsiminal-status.is-hidden {
+  display: none;
+}
+
+.obsiminal-terminal-container,
+.obsiminal-terminal-host {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+
+.obsiminal-terminal-container {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: stretch;
+  overflow: hidden;
+}
+
+.obsiminal-terminal-pane {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 80px;
+  min-height: 0;
+  overflow: hidden;
+  padding: var(--size-4-2);
+}
+
+.obsiminal-split-divider {
+  position: relative;
+  z-index: 2;
+  flex: 0 0 7px;
+  width: 7px;
+  cursor: col-resize;
+  touch-action: none;
+}
+
+.obsiminal-split-divider::after {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 3px;
+  width: 1px;
+  background: var(--background-modifier-border);
+  content: "";
+  transition: background-color 100ms ease;
+}
+
+.obsiminal-split-divider:hover::after,
+.obsiminal-split-divider.is-resizing::after {
+  background: var(--interactive-accent);
+}
+
+.obsiminal-terminal-container:has(.obsiminal-split-divider) .obsiminal-terminal-pane.is-active {
+  box-shadow: inset 0 1px 0 var(--interactive-accent);
+}
+
+.obsiminal-terminal-host .terminal.xterm {
+  height: 100%;
+}
+
+.obsiminal-terminal-host .xterm-viewport {
+  background: transparent !important;
+}

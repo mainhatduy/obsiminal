@@ -2,6 +2,6 @@ node_modules/
 /Obsiminal/
 main.js
 main.js.map
-styles.css
+/styles.css
 coverage/
 .DS_Store
