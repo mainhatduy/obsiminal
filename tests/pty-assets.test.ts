@@ -28,7 +28,7 @@ describe("bundled node-pty assets", () => {
       `${process.platform}-${process.arch}`,
     );
 
-    prepareBundledNodePty(pluginDirectory, assets);
+    expect(prepareBundledNodePty(pluginDirectory, assets)).toBe(nativeDirectory);
 
     const helperPath = path.join(nativeDirectory, "spawn-helper");
     const modulePath = path.join(nativeDirectory, "pty.node");

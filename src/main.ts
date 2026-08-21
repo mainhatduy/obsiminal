@@ -257,14 +257,14 @@ export default class VaultShellPlugin extends Plugin {
     const pluginDirectory = adapter.getFullPath(
       `${this.app.vault.configDir}/plugins/${this.manifest.id}`,
     );
-    prepareBundledNodePty(pluginDirectory);
+    const nativeDirectory = prepareBundledNodePty(pluginDirectory);
     return new TerminalSession({
       args: profile.args,
       cwd: adapter.getBasePath(),
       env: createShellEnvironment(process.env),
       onStateChange: (state) => this.handleSessionStateChange(id, state),
       shell: profile.path,
-      spawner: createNodePtySpawner(),
+      spawner: createNodePtySpawner(nativeDirectory),
       surface: new XtermSurface(),
     });
   }

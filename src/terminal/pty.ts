@@ -4,6 +4,7 @@ import type {
   IPtyForkOptions,
   spawn as nodePtySpawn,
 } from "node-pty";
+import path from "node:path";
 
 import type { PtyProcess, PtySpawner } from "./contracts";
 
@@ -11,11 +12,24 @@ interface NodePtyModule {
   spawn: typeof nodePtySpawn;
 }
 
-export function createNodePtySpawner(): PtySpawner {
+interface NodePtyUtilsModule {
+  loadNativeModule(name: string): { dir: string; module: unknown };
+}
+
+export function createNodePtySpawner(nativeDirectory: string): PtySpawner {
   return (executable, args, options): PtyProcess => {
-    // Loading the bundled module lazily lets the plugin provision its native
-    // runtime first and report startup errors inside the terminal surface.
-    // eslint-disable-next-line @typescript-eslint/no-require-imports -- Keep native module initialization lazy so plugin startup can recover from load errors.
+    // Obsidian's Electron renderer resolves dynamic relative requires from
+    // renderer_init instead of main.js. Override node-pty's native loader with
+    // an absolute path before initializing the bundled module.
+    // eslint-disable-next-line @typescript-eslint/no-require-imports -- Patch node-pty before its native module is initialized.
+    const nodePtyUtils = require("node-pty/lib/utils") as NodePtyUtilsModule;
+    nodePtyUtils.loadNativeModule = (name) => {
+      const modulePath = path.join(nativeDirectory, `${name}.node`);
+      // eslint-disable-next-line @typescript-eslint/no-require-imports -- Native addons must be loaded from their absolute runtime path in Electron.
+      return { dir: nativeDirectory, module: require(modulePath) as unknown };
+    };
+
+    // eslint-disable-next-line @typescript-eslint/no-require-imports -- Keep native module initialization lazy so errors can be shown in the terminal surface.
     const nodePty = require("node-pty") as NodePtyModule;
     const spawnOptions: IPtyForkOptions | IWindowsPtyForkOptions = {
       cols: options.cols,

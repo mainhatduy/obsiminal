@@ -15,7 +15,7 @@ export interface NodePtyAssets {
 export function prepareBundledNodePty(
   pluginDirectory: string,
   assets = getAssetsForCurrentPlatform(),
-): void {
+): string {
   const nativeDirectory = path.join(
     pluginDirectory,
     "prebuilds",
@@ -25,6 +25,7 @@ export function prepareBundledNodePty(
   mkdirSync(nativeDirectory, { recursive: true });
   ensureAsset(path.join(nativeDirectory, "pty.node"), assets.module, 0o644);
   ensureAsset(path.join(nativeDirectory, "spawn-helper"), assets.helper, 0o755);
+  return nativeDirectory;
 }
 
 function getAssetsForCurrentPlatform(): NodePtyAssets {

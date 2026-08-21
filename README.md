@@ -9,7 +9,7 @@ workflow.
 ![Vault Shell terminal running inside an Obsidian workspace](images/demo.png)
 
 > [!IMPORTANT]
-> Vault Shell 0.1.2 is an early macOS-only release. It does not support Obsidian Mobile.
+> Vault Shell 0.1.3 is an early macOS-only release. It does not support Obsidian Mobile.
 
 ## Features
 
