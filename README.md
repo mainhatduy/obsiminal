@@ -9,7 +9,7 @@ workflow.
 ![Vault Shell terminal running inside an Obsidian workspace](images/demo.png)
 
 > [!IMPORTANT]
-> Vault Shell 0.1.0 is an early macOS-only release that must be installed manually. It does
+> Vault Shell 0.1.1 is an early macOS-only release that must be installed manually. It does
 > not support Obsidian Mobile and is not yet available in the Community Plugins directory.
 
 ## Features

@@ -245,7 +245,7 @@ export default class VaultShellPlugin extends Plugin {
 
   private createSession(id: string, profile: ShellProfile): TerminalSession {
     if (!Platform.isMacOS) {
-      throw new Error("the 0.1.0 MVP currently supports macOS only");
+      throw new Error("the current release supports macOS only");
     }
 
     const adapter = this.app.vault.adapter;

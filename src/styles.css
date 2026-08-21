@@ -325,7 +325,7 @@
   background: var(--interactive-accent);
 }
 
-.obsiminal-terminal-container:has(.obsiminal-split-divider) .obsiminal-terminal-pane.is-active {
+.obsiminal-terminal-container.has-split .obsiminal-terminal-pane.is-active {
   box-shadow: inset 0 1px 0 var(--interactive-accent);
 }
 
@@ -333,6 +333,6 @@
   height: 100%;
 }
 
-.obsiminal-terminal-host .xterm-viewport {
-  background: transparent !important;
+.obsiminal-view .obsiminal-terminal-host .terminal.xterm .xterm-viewport {
+  background: transparent;
 }

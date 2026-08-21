@@ -194,6 +194,7 @@ export class TerminalView extends ItemView {
     }
 
     this.terminalContainer.empty();
+    this.terminalContainer.toggleClass("has-split", terminals.length > 1);
     for (const [index, terminal] of terminals.entries()) {
       if (index > 0) {
         const previousPane = panes.get(terminals[index - 1].id);

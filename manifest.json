@@ -1,9 +1,9 @@
 {
   "id": "obsiminal",
   "name": "Vault Shell",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "minAppVersion": "1.7.2",
-  "description": "Open an interactive terminal inside your Obsidian workspace.",
+  "description": "Open an interactive terminal inside your workspace.",
   "author": "mainhatduy",
   "authorUrl": "https://github.com/mainhatduy",
   "isDesktopOnly": true
