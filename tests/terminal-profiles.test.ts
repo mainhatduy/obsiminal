@@ -63,6 +63,23 @@ describe("shell profiles", () => {
     ]);
   });
 
+  it("detects zsh from its standard Linux locations without shell environment variables", () => {
+    const profiles = discoverShellProfiles({
+      env: {},
+      isExecutable: (path) => path === "/usr/bin/zsh",
+      platform: "linux",
+      readShellsFile: () => "",
+    });
+
+    expect(profiles).toContainEqual({
+      args: ["-l"],
+      id: "auto:/usr/bin/zsh",
+      label: "zsh",
+      name: "zsh",
+      path: "/usr/bin/zsh",
+    });
+  });
+
   it("discovers Windows shells case-insensitively and uses Windows arguments", () => {
     const installed = new Set([
       "c:\\windows\\system32\\cmd.exe",

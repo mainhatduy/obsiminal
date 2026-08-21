@@ -133,7 +133,9 @@ export default class VaultShellPlugin extends Plugin {
       this.refreshShellProfiles();
       const profile = profileId
         ? this.shellProfiles.find((candidate) => candidate.id === profileId)
-        : this.shellProfiles[0];
+        : (this.shellProfiles.find(
+            (candidate) => candidate.id === this.settings.defaultShellProfileId,
+          ) ?? this.shellProfiles[0]);
       if (!profile) {
         throw new Error("no supported shell executable was found on this machine");
       }

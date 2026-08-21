@@ -7,25 +7,34 @@ export interface CustomShellDefinition {
 
 export interface VaultShellSettings {
   customShells: CustomShellDefinition[];
+  defaultShellProfileId: string | null;
 }
 
-export const DEFAULT_SETTINGS: VaultShellSettings = { customShells: [] };
+export const DEFAULT_SETTINGS: VaultShellSettings = {
+  customShells: [],
+  defaultShellProfileId: null,
+};
 
 export function normalizeSettings(value: unknown): VaultShellSettings {
-  if (!value || typeof value !== "object" || !("customShells" in value)) {
-    return { customShells: [] };
+  if (!value || typeof value !== "object") {
+    return { ...DEFAULT_SETTINGS, customShells: [] };
   }
 
-  const candidates: unknown[] = Array.isArray(value.customShells)
-    ? (value.customShells as unknown[])
-    : [];
+  const settings = value as Record<string, unknown>;
+  const candidates: unknown[] = Array.isArray(settings.customShells) ? settings.customShells : [];
   const customShells = candidates.filter(isCustomShellDefinition).map((candidate) => ({
     args: [...candidate.args],
     executable: candidate.executable,
     id: candidate.id,
     name: candidate.name,
   }));
-  return { customShells };
+  return {
+    customShells,
+    defaultShellProfileId:
+      typeof settings.defaultShellProfileId === "string" && settings.defaultShellProfileId
+        ? settings.defaultShellProfileId
+        : null,
+  };
 }
 
 function isCustomShellDefinition(value: unknown): value is CustomShellDefinition {

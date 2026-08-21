@@ -25,11 +25,27 @@ describe("settings", () => {
           name: "WSL",
         },
       ],
+      defaultShellProfileId: null,
     });
   });
 
   it("returns defaults for missing or invalid data", () => {
-    expect(normalizeSettings(null)).toEqual({ customShells: [] });
-    expect(normalizeSettings({ customShells: "invalid" })).toEqual({ customShells: [] });
+    expect(normalizeSettings(null)).toEqual({
+      customShells: [],
+      defaultShellProfileId: null,
+    });
+    expect(normalizeSettings({ customShells: "invalid" })).toEqual({
+      customShells: [],
+      defaultShellProfileId: null,
+    });
+  });
+
+  it("keeps a selected default shell profile", () => {
+    expect(
+      normalizeSettings({ customShells: [], defaultShellProfileId: "auto:/usr/bin/zsh" }),
+    ).toEqual({
+      customShells: [],
+      defaultShellProfileId: "auto:/usr/bin/zsh",
+    });
   });
 });
