@@ -1,0 +1,64 @@
+{
+  "name": "obsiminal",
+  "version": "0.1.0",
+  "description": "An embedded PTY terminal for Obsidian.",
+  "engines": {
+    "node": ">=24"
+  },
+  "main": "main.js",
+  "packageManager": "npm@11.19.0",
+  "scripts": {
+    "dev": "node esbuild.config.mjs",
+    "build": "npm run typecheck && node esbuild.config.mjs production",
+    "check": "npm run validate",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint .",
+    "native:prepare": "node scripts/prepare-native.mjs",
+    "postinstall": "npm run native:prepare",
+    "precommit": "lint-staged",
+    "prepare": "husky",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "validate": "npm run lint && npm run format:check && npm test && npm run build"
+  },
+  "keywords": [
+    "obsidian",
+    "terminal",
+    "pty"
+  ],
+  "author": "mainhatduy",
+  "license": "MIT",
+  "dependencies": {
+    "@xterm/addon-fit": "^0.10.0",
+    "@xterm/xterm": "^5.5.0",
+    "node-pty": "^1.1.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^24.3.0",
+    "esbuild": "^0.25.9",
+    "eslint": "^10.8.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.3.0",
+    "obsidian": "^1.8.7",
+    "prettier": "^3.9.6",
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.41.0",
+    "vitest": "^3.2.4"
+  },
+  "allowScripts": {
+    "node-pty@1.1.0": true,
+    "esbuild@0.25.12": true,
+    "esbuild@0.28.2": true,
+    "fsevents@2.3.3": true
+  },
+  "lint-staged": {
+    "*.{js,mjs,ts}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{css,json,md,yaml,yml}": "prettier --write"
+  }
+}
