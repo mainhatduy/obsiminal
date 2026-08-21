@@ -12,6 +12,9 @@ mkdirSync(prebuildDirectory, { recursive: true });
 
 if (process.platform === "darwin") {
   copyPrebuild("pty.node");
+  // node-pty 1.1.0 publishes spawn-helper as 0644. Repair the installed copy so both the
+  // direct native smoke test and the runtime staged for the plugin can execute it.
+  chmodSync(path.join(nodePtyDirectory, "prebuilds", key, "spawn-helper"), 0o755);
   copyPrebuild("spawn-helper");
   chmodSync(path.join(prebuildDirectory, "spawn-helper"), 0o755);
 } else if (process.platform === "linux") {

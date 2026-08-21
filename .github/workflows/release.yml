@@ -43,11 +43,11 @@ jobs:
         env:
           HUSKY: 0
 
-      - name: Smoke-test native PTY
-        run: npm run native:smoke
-
       - name: Stage native runtime
         run: node scripts/stage-node-pty-runtime.mjs
+
+      - name: Smoke-test native PTY
+        run: npm run native:smoke
 
       - name: Upload native runtime
         uses: actions/upload-artifact@v4
@@ -59,7 +59,7 @@ jobs:
   runtime-linux:
     name: Package runtime (linux-${{ matrix.arch }})
     runs-on: ${{ matrix.runner }}
-    container: ubuntu:20.04
+    container: debian:11-slim
     timeout-minutes: 20
     strategy:
       fail-fast: false
@@ -88,11 +88,11 @@ jobs:
         env:
           HUSKY: 0
 
-      - name: Smoke-test native PTY
-        run: npm run native:smoke
-
       - name: Stage native runtime
         run: node scripts/stage-node-pty-runtime.mjs
+
+      - name: Smoke-test native PTY
+        run: npm run native:smoke
 
       - name: Upload native runtime
         uses: actions/upload-artifact@v4

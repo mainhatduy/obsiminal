@@ -8,8 +8,16 @@ const marker = "VAULT_SHELL_NATIVE_SMOKE";
 const command =
   process.platform === "win32" ? `echo ${marker}\r\nexit\r\n` : `printf '${marker}\\n'\nexit\n`;
 
-await runExitSmoke();
-await runKillSmoke();
+try {
+  await runExitSmoke();
+  await runKillSmoke();
+  // node-pty 1.1.0 leaves its ConPTY worker referenced after shutdown on Windows.
+  // Exit explicitly once the functional and lifecycle assertions have completed.
+  process.exit(0);
+} catch (error) {
+  console.error(error);
+  process.exit(1);
+}
 
 async function runExitSmoke() {
   await new Promise((resolve, reject) => {

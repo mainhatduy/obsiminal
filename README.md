@@ -9,7 +9,7 @@ workflow.
 ![Vault Shell terminal running inside an Obsidian workspace](images/demo.png)
 
 > [!IMPORTANT]
-> Vault Shell 0.2.0 supports the Obsidian desktop app on macOS, Windows, and glibc-based
+> Vault Shell 0.2.2 supports the Obsidian desktop app on macOS, Windows, and glibc-based
 > Linux. It does not support Obsidian Mobile or musl-based distributions such as Alpine Linux.
 
 ## Features

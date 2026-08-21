@@ -2,6 +2,8 @@ name: CI
 
 on:
   push:
+    branches:
+      - "**"
   pull_request:
 
 concurrency:
@@ -37,6 +39,7 @@ jobs:
 
   native-packaged:
     name: Native smoke (${{ matrix.key }})
+    if: github.event_name == 'pull_request'
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 15
     strategy:
@@ -67,16 +70,17 @@ jobs:
         env:
           HUSKY: 0
 
-      - name: Smoke-test native PTY
-        run: npm run native:smoke
-
       - name: Stage native runtime
         run: node scripts/stage-node-pty-runtime.mjs
 
+      - name: Smoke-test native PTY
+        run: npm run native:smoke
+
   native-linux:
     name: Native smoke (linux-${{ matrix.arch }})
+    if: github.event_name == 'pull_request'
     runs-on: ${{ matrix.runner }}
-    container: ubuntu:20.04
+    container: debian:11-slim
     timeout-minutes: 20
     strategy:
       fail-fast: false
@@ -105,8 +109,8 @@ jobs:
         env:
           HUSKY: 0
 
-      - name: Smoke-test native PTY
-        run: npm run native:smoke
-
       - name: Stage native runtime
         run: node scripts/stage-node-pty-runtime.mjs
+
+      - name: Smoke-test native PTY
+        run: npm run native:smoke

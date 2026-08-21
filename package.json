@@ -1,6 +1,6 @@
 {
   "name": "obsiminal",
-  "version": "0.2.0",
+  "version": "0.2.2",
   "description": "An embedded PTY terminal for Obsidian.",
   "engines": {
     "node": ">=24"
