@@ -15,6 +15,26 @@ export class VaultShellSettingTab extends PluginSettingTab {
   display(): void {
     this.containerEl.empty();
 
+    const profiles = this.plugin.getShellProfiles();
+    const selectedProfileExists = profiles.some(
+      (profile) => profile.id === this.plugin.settings.defaultShellProfileId,
+    );
+    new Setting(this.containerEl)
+      .setName("Default shell")
+      .setDesc("Shell used by the + button and when the terminal opens for the first time.")
+      .addDropdown((dropdown) => {
+        dropdown.addOption("", "Automatic (first detected)");
+        for (const profile of profiles) {
+          dropdown.addOption(profile.id, profile.label);
+        }
+        dropdown
+          .setValue(selectedProfileExists ? (this.plugin.settings.defaultShellProfileId ?? "") : "")
+          .onChange((value) => {
+            this.plugin.settings.defaultShellProfileId = value || null;
+            void this.plugin.saveSettings();
+          });
+      });
+
     new Setting(this.containerEl)
       .setName("Custom shells")
       .setDesc("Add any shell executable that Vault Shell does not detect automatically.")
@@ -85,9 +105,13 @@ export class VaultShellSettingTab extends PluginSettingTab {
   }
 
   private async removeShell(id: string): Promise<void> {
+    const profileId = `custom:${id}`;
     this.plugin.settings.customShells = this.plugin.settings.customShells.filter(
       (shell) => shell.id !== id,
     );
+    if (this.plugin.settings.defaultShellProfileId === profileId) {
+      this.plugin.settings.defaultShellProfileId = null;
+    }
     await this.plugin.saveSettings();
     this.display();
   }

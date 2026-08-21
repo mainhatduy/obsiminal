@@ -9,7 +9,7 @@ workflow.
 ![Vault Shell terminal running inside an Obsidian workspace](images/demo.png)
 
 > [!IMPORTANT]
-> Vault Shell 0.2.2 supports the Obsidian desktop app on macOS, Windows, and glibc-based
+> Vault Shell 0.3.0 supports the Obsidian desktop app on macOS, Windows, and glibc-based
 > Linux. It does not support Obsidian Mobile or musl-based distributions such as Alpine Linux.
 
 ## Features
@@ -83,6 +83,9 @@ Once the terminal is open:
   the default width.
 - Select **×** on a terminal row to close that session and terminate its process.
 
+Choose the shell used by the **+** button under **Settings → Vault Shell → Default shell**.
+The automatic option keeps using the first shell detected from the Obsidian environment.
+
 You can assign your preferred shortcut under **Settings → Hotkeys**.
 
 ### Custom shells
@@ -98,6 +101,18 @@ PowerShell 7, WSL, Git Bash, `zsh`, `bash`, `fish`, Nushell, and others. To add 
 For example, create a profile for a specific WSL distribution with the `wsl.exe` path and the
 two arguments `-d` and `Ubuntu` on separate lines. Custom profiles remain in settings when the
 executable is temporarily unavailable, but they appear in the terminal menu only while valid.
+
+On Linux, if `zsh` is installed but does not appear in the shell menu, first find its path:
+
+```sh
+command -v zsh
+test -x /usr/bin/zsh && echo "zsh executable: OK"
+```
+
+Then add a custom shell named `zsh`, use the absolute executable path (commonly
+`/usr/bin/zsh` or `/bin/zsh`), and enter `-l` as its only argument. Select that profile under
+**Default shell** or from the arrow beside **+**. A new session should report a value for
+`$ZSH_VERSION`; existing sessions keep their original shell.
 
 ### Commands
 
