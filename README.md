@@ -9,13 +9,16 @@ workflow.
 ![Vault Shell terminal running inside an Obsidian workspace](images/demo.png)
 
 > [!IMPORTANT]
-> Vault Shell 0.1.3 is an early macOS-only release. It does not support Obsidian Mobile.
+> Vault Shell 0.2.0 supports the Obsidian desktop app on macOS, Windows, and glibc-based
+> Linux. It does not support Obsidian Mobile or musl-based distributions such as Alpine Linux.
 
 ## Features
 
 - Open or focus the terminal with a ribbon icon or the command palette.
 - Start each shell in the root directory of the current vault.
-- Discover installed shells from `$SHELL`, `/etc/shells`, and `$PATH`.
+- Discover installed shells from the current environment, system shell lists, and standard
+  installation locations on each operating system.
+- Add custom shell profiles with an executable and arguments from the plugin settings.
 - Create, switch between, and close multiple terminal sessions from a vertical manager.
 - Split terminals side by side in the same group and drag the divider to resize each pane.
 - Update each terminal label from its foreground process, then restore the shell name when the
@@ -28,11 +31,12 @@ workflow.
 
 ## Requirements
 
-| Requirement      | Version or details             |
-| ---------------- | ------------------------------ |
-| Operating system | macOS (Intel or Apple Silicon) |
-| Obsidian         | 1.7.2 or later                 |
-| Vault            | Local filesystem vault         |
+| Requirement      | Version or details                                                |
+| ---------------- | ----------------------------------------------------------------- |
+| Operating system | macOS, Windows 10 1903 or later, Windows 11, or glibc Linux 2.31+ |
+| CPU architecture | x64 or arm64                                                      |
+| Obsidian         | 1.7.2 or later                                                    |
+| Vault            | Local filesystem vault                                            |
 
 ## Installation
 
@@ -44,8 +48,8 @@ Install Vault Shell from **Settings → Community plugins**:
 
 No Node.js, npm, compiler, or separate `node_modules` directory is required. The Community
 Plugins installer downloads the standard `main.js`, `manifest.json`, and `styles.css` files.
-`main.js` includes the native PTY runtimes for Intel and Apple Silicon Macs and prepares the
-matching runtime locally when the first terminal starts.
+`main.js` includes the native PTY runtimes for all supported operating systems and CPU
+architectures, then prepares only the matching runtime locally when the first terminal starts.
 
 To install from source in a test vault instead:
 
@@ -81,6 +85,20 @@ Once the terminal is open:
 
 You can assign your preferred shortcut under **Settings → Hotkeys**.
 
+### Custom shells
+
+Vault Shell detects common shells automatically, including `cmd`, Windows PowerShell,
+PowerShell 7, WSL, Git Bash, `zsh`, `bash`, `fish`, Nushell, and others. To add another shell:
+
+1. Open **Settings → Vault Shell**.
+2. Select **Add shell**.
+3. Enter a display name and the absolute path to the executable.
+4. Enter optional arguments with one argument per line.
+
+For example, create a profile for a specific WSL distribution with the `wsl.exe` path and the
+two arguments `-d` and `Ubuntu` on separate lines. Custom profiles remain in settings when the
+executable is temporarily unavailable, but they appear in the terminal menu only while valid.
+
 ### Commands
 
 | Command                                 | Default hotkey | Description                                          |
@@ -95,8 +113,9 @@ Vault Shell does not require an account, collect telemetry, or make network requ
 own.
 
 To discover installed shells, Vault Shell uses the Node.js filesystem API to read
-`/etc/shells` and check whether shell paths found through `$SHELL` and `$PATH` are executable.
-These are read-only checks outside the vault; Vault Shell does not modify those files.
+`/etc/shells` on Unix systems and check shell paths found through environment variables and
+standard installation locations. These are read-only checks outside the vault; Vault Shell
+does not modify those files.
 When the first terminal starts, Vault Shell writes its bundled PTY runtime to the plugin's own
 `prebuilds` directory. It does not download code or dependencies.
 
@@ -107,7 +126,7 @@ them and use a test vault while evaluating the plugin.
 
 ## Troubleshooting the PTY runtime
 
-If the terminal reports that `pty.node` or `spawn-helper` cannot be loaded:
+If the terminal reports that `pty.node`, `conpty.node`, or a PTY helper cannot be loaded:
 
 1. Quit Obsidian completely.
 2. Delete the `prebuilds` directory inside
@@ -116,7 +135,8 @@ If the terminal reports that `pty.node` or `spawn-helper` cannot be loaded:
 3. Reopen Obsidian and start a terminal so Vault Shell prepares a fresh copy.
 
 If the problem continues, reinstall the plugin from Community Plugins to replace `main.js`,
-then report the full error and whether the Mac uses Intel or Apple Silicon.
+then report the full error, operating system, CPU architecture, and Linux distribution when
+applicable. Alpine Linux and other musl-based distributions are not supported.
 
 ## Development
 
@@ -133,6 +153,9 @@ npm run dev
 After a source change, run **Reload app without saving** from Obsidian's command palette.
 You can also disable and re-enable the plugin.
 
+Node.js 24 or later and npm are required for source builds. Linux source builds also require
+Python 3, `make`, and a C++ compiler because `node-pty` is compiled locally.
+
 Run the complete quality check before submitting a change:
 
 ```sh
@@ -140,11 +163,16 @@ npm run validate
 ```
 
 This command runs ESLint, Prettier checks, tests, TypeScript type checking, and a production
-build. The build writes the Obsidian plugin artifacts to the repository root:
+build for the current host. The build writes the Obsidian plugin artifacts to the repository
+root:
 
 - `main.js`
 - `manifest.json`
 - `styles.css`
+
+Official releases use a six-runner CI matrix to smoke-test and stage macOS, Windows, and Linux
+runtimes for x64 and arm64. The release job verifies those native binaries before running
+`npm run build:universal`; no runtime is downloaded by the installed plugin.
 
 ### Project structure
 
@@ -155,10 +183,11 @@ build. The build writes the Obsidian plugin artifacts to the repository root:
 
 ## Current limitations
 
-- macOS only.
+- Linux requires glibc 2.31 or later; musl-based distributions are not supported.
+- Windows requires the ConPTY API available in Windows 10 1903 or later.
 - Local filesystem vaults only.
 - Sessions do not survive an Obsidian restart, reload, or plugin disable.
-- Shell, font, and working-directory settings are not configurable yet.
+- Font and working-directory settings are not configurable yet.
 
 ## Contributing
 

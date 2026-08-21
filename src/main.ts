@@ -1,5 +1,7 @@
-import { FileSystemAdapter, Notice, Platform, Plugin } from "obsidian";
+import { FileSystemAdapter, Notice, Plugin } from "obsidian";
 
+import { VaultShellSettingTab } from "./settings";
+import { DEFAULT_SETTINGS, normalizeSettings, type VaultShellSettings } from "./settings-data";
 import type { TerminalSessionState, TerminalSummary } from "./terminal/contracts";
 import { createNodePtySpawner } from "./terminal/pty";
 import { prepareBundledNodePty } from "./terminal/pty-assets";
@@ -19,6 +21,8 @@ interface ManagedTerminal {
 }
 
 export default class VaultShellPlugin extends Plugin {
+  settings: VaultShellSettings = { ...DEFAULT_SETTINGS, customShells: [] };
+
   private activeTerminalId: string | null = null;
   private attachedContainer: HTMLElement | null = null;
   private readonly attachedPanes = new Map<string, HTMLElement>();
@@ -28,9 +32,11 @@ export default class VaultShellPlugin extends Plugin {
   private readonly terminals: ManagedTerminal[] = [];
 
   async onload(): Promise<void> {
-    this.shellProfiles = discoverShellProfiles();
+    this.settings = normalizeSettings(await this.loadData());
+    this.refreshShellProfiles();
 
     this.registerView(TERMINAL_VIEW_TYPE, (leaf) => new TerminalView(leaf, this));
+    this.addSettingTab(new VaultShellSettingTab(this.app, this));
 
     this.addRibbonIcon("terminal", "Open or focus terminal", () => {
       void this.openOrFocusTerminal();
@@ -118,46 +124,20 @@ export default class VaultShellPlugin extends Plugin {
   }
 
   getShellProfiles(): readonly ShellProfile[] {
-    this.shellProfiles = discoverShellProfiles();
+    this.refreshShellProfiles();
     return this.shellProfiles;
   }
 
-  createTerminal(shellPath?: string, groupId?: string): void {
+  createTerminal(profileId?: string, groupId?: string): void {
     try {
-      this.shellProfiles = discoverShellProfiles();
-      const profile = shellPath
-        ? this.shellProfiles.find((candidate) => candidate.path === shellPath)
+      this.refreshShellProfiles();
+      const profile = profileId
+        ? this.shellProfiles.find((candidate) => candidate.id === profileId)
         : this.shellProfiles[0];
       if (!profile) {
         throw new Error("no supported shell executable was found on this machine");
       }
-
-      const id = `terminal-${this.nextTerminalId}`;
-      const session = this.createSession(id, profile);
-
-      this.nextTerminalId += 1;
-      const terminal: ManagedTerminal = {
-        groupId: groupId ?? id,
-        id,
-        label: profile.name,
-        profile,
-        session,
-      };
-
-      let groupEndIndex = this.terminals.length;
-      if (groupId) {
-        for (const [index, candidate] of this.terminals.entries()) {
-          if (candidate.groupId === groupId) {
-            groupEndIndex = index + 1;
-          }
-        }
-      }
-      this.terminals.splice(groupEndIndex, 0, terminal);
-      this.refreshTerminalLabels();
-      this.activeTerminalId = id;
-      this.renderActiveGroup();
-      terminal.session.start();
-      this.refreshView();
+      this.createTerminalFromProfile(profile, groupId);
     } catch (error) {
       this.showError(error);
     }
@@ -170,7 +150,16 @@ export default class VaultShellPlugin extends Plugin {
       return;
     }
 
-    this.createTerminal(active.profile.path, active.groupId);
+    try {
+      this.createTerminalFromProfile(active.profile, active.groupId);
+    } catch (error) {
+      this.showError(error);
+    }
+  }
+
+  async saveSettings(): Promise<void> {
+    await this.saveData(this.settings);
+    this.refreshShellProfiles();
   }
 
   selectTerminal(id: string): void {
@@ -245,10 +234,6 @@ export default class VaultShellPlugin extends Plugin {
   }
 
   private createSession(id: string, profile: ShellProfile): TerminalSession {
-    if (!Platform.isMacOS) {
-      throw new Error("the current release supports macOS only");
-    }
-
     const adapter = this.app.vault.adapter;
     if (!(adapter instanceof FileSystemAdapter)) {
       throw new Error("the current vault is not backed by a local filesystem");
@@ -269,8 +254,41 @@ export default class VaultShellPlugin extends Plugin {
     });
   }
 
+  private createTerminalFromProfile(profile: ShellProfile, groupId?: string): void {
+    const id = `terminal-${this.nextTerminalId}`;
+    const session = this.createSession(id, profile);
+
+    this.nextTerminalId += 1;
+    const terminal: ManagedTerminal = {
+      groupId: groupId ?? id,
+      id,
+      label: profile.name,
+      profile,
+      session,
+    };
+
+    let groupEndIndex = this.terminals.length;
+    if (groupId) {
+      for (const [index, candidate] of this.terminals.entries()) {
+        if (candidate.groupId === groupId) {
+          groupEndIndex = index + 1;
+        }
+      }
+    }
+    this.terminals.splice(groupEndIndex, 0, terminal);
+    this.refreshTerminalLabels();
+    this.activeTerminalId = id;
+    this.renderActiveGroup();
+    terminal.session.start();
+    this.refreshView();
+  }
+
   private getActiveTerminal(): ManagedTerminal | null {
     return this.terminals.find((terminal) => terminal.id === this.activeTerminalId) ?? null;
+  }
+
+  private refreshShellProfiles(): void {
+    this.shellProfiles = discoverShellProfiles({ customShells: this.settings.customShells });
   }
 
   private getTerminalSummaries(): TerminalSummary[] {

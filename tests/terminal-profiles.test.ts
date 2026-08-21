@@ -14,11 +14,18 @@ describe("shell profiles", () => {
     ).toEqual([
       {
         args: ["-l"],
+        id: "auto:/opt/homebrew/bin/fish",
         label: "fish",
         name: "fish",
         path: "/opt/homebrew/bin/fish",
       },
-      { args: ["-l"], label: "zsh", name: "zsh", path: "/bin/zsh" },
+      {
+        args: ["-l"],
+        id: "auto:/bin/zsh",
+        label: "zsh",
+        name: "zsh",
+        path: "/bin/zsh",
+      },
     ]);
   });
 
@@ -53,6 +60,71 @@ describe("shell profiles", () => {
       "/custom/zsh",
       "/opt/bin/fish",
       "/opt/bin/nu",
+    ]);
+  });
+
+  it("discovers Windows shells case-insensitively and uses Windows arguments", () => {
+    const installed = new Set([
+      "c:\\windows\\system32\\cmd.exe",
+      "c:\\windows\\system32\\windowspowershell\\v1.0\\powershell.exe",
+      "c:\\windows\\system32\\wsl.exe",
+      "c:\\tools\\pwsh.exe",
+    ]);
+    const profiles = discoverShellProfiles({
+      env: {
+        ComSpec: "C:\\WINDOWS\\System32\\cmd.exe",
+        Path: "C:\\Tools;C:\\WINDOWS\\System32",
+        SystemRoot: "C:\\Windows",
+      },
+      isExecutable: (executable) => installed.has(executable.toLowerCase()),
+      platform: "win32",
+    });
+
+    expect(profiles.map(({ args, name }) => ({ args, name }))).toEqual([
+      { args: [], name: "cmd" },
+      { args: ["-NoLogo"], name: "powershell" },
+      { args: [], name: "wsl" },
+      { args: ["-NoLogo"], name: "pwsh" },
+    ]);
+  });
+
+  it("keeps custom profiles with the same executable and different arguments", () => {
+    const profiles = discoverShellProfiles({
+      customShells: [
+        {
+          args: ["-d", "Ubuntu"],
+          executable: "C:\\Windows\\System32\\wsl.exe",
+          id: "ubuntu",
+          name: "Ubuntu",
+        },
+        {
+          args: ["-d", "Debian"],
+          executable: "C:\\Windows\\System32\\wsl.exe",
+          id: "debian",
+          name: "Debian",
+        },
+        { args: [], executable: "relative.exe", id: "invalid", name: "Invalid" },
+      ],
+      env: {},
+      isExecutable: (executable) => executable.toLowerCase() === "c:\\windows\\system32\\wsl.exe",
+      platform: "win32",
+    });
+
+    expect(profiles.filter((profile) => profile.id.startsWith("custom:"))).toEqual([
+      {
+        args: ["-d", "Ubuntu"],
+        id: "custom:ubuntu",
+        label: "Ubuntu",
+        name: "Ubuntu",
+        path: "C:\\Windows\\System32\\wsl.exe",
+      },
+      {
+        args: ["-d", "Debian"],
+        id: "custom:debian",
+        label: "Debian",
+        name: "Debian",
+        path: "C:\\Windows\\System32\\wsl.exe",
+      },
     ]);
   });
 });

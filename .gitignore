@@ -4,4 +4,5 @@ main.js
 main.js.map
 /styles.css
 coverage/
+.build/
 .DS_Store

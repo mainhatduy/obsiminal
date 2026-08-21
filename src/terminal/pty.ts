@@ -37,6 +37,7 @@ export function createNodePtySpawner(nativeDirectory: string): PtySpawner {
       env: options.env,
       name: options.name,
       rows: options.rows,
+      ...(process.platform === "win32" ? { useConpty: true, useConptyDll: false } : {}),
     };
 
     return adaptPty(nodePty.spawn(executable, args, spawnOptions));

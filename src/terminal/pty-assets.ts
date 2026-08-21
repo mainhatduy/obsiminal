@@ -2,58 +2,96 @@ import { chmodSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync }
 import path from "node:path";
 import process from "node:process";
 
-declare const __NODE_PTY_DARWIN_ARM64_HELPER__: string;
-declare const __NODE_PTY_DARWIN_ARM64_MODULE__: string;
-declare const __NODE_PTY_DARWIN_X64_HELPER__: string;
-declare const __NODE_PTY_DARWIN_X64_MODULE__: string;
+declare const __NODE_PTY_RUNTIMES__: Record<string, BundledRuntimeFileDefinition[]>;
 
-export interface NodePtyAssets {
-  helper: Buffer;
-  module: Buffer;
+interface BundledRuntimeFileDefinition {
+  contents: string;
+  mode?: number;
+  path: string;
 }
+
+export interface BundledRuntimeFile {
+  contents: Buffer;
+  mode?: number;
+  path: string;
+}
+
+const SUPPORTED_RUNTIME_KEYS = new Set([
+  "darwin-arm64",
+  "darwin-x64",
+  "linux-arm64",
+  "linux-x64",
+  "win32-arm64",
+  "win32-x64",
+]);
 
 export function prepareBundledNodePty(
   pluginDirectory: string,
-  assets = getAssetsForCurrentPlatform(),
+  files = getFilesForCurrentPlatform(),
 ): string {
-  const nativeDirectory = path.join(
-    pluginDirectory,
-    "prebuilds",
-    `${process.platform}-${process.arch}`,
-  );
+  for (const file of files) {
+    if (path.isAbsolute(file.path) || file.path.split(/[\\/]/u).includes("..")) {
+      throw new Error(`invalid bundled PTY runtime path: ${file.path}`);
+    }
 
-  mkdirSync(nativeDirectory, { recursive: true });
-  ensureAsset(path.join(nativeDirectory, "pty.node"), assets.module, 0o644);
-  ensureAsset(path.join(nativeDirectory, "spawn-helper"), assets.helper, 0o755);
-  return nativeDirectory;
+    ensureAsset(path.join(pluginDirectory, file.path), file.contents, file.mode);
+  }
+
+  return path.join(pluginDirectory, "prebuilds", `${process.platform}-${process.arch}`);
 }
 
-function getAssetsForCurrentPlatform(): NodePtyAssets {
-  if (process.platform !== "darwin") {
-    throw new Error("the bundled PTY runtime currently supports macOS only");
+export function getRuntimeKey(
+  platform: NodeJS.Platform = process.platform,
+  architecture: string = process.arch,
+): string {
+  const key = `${platform}-${architecture}`;
+  if (!SUPPORTED_RUNTIME_KEYS.has(key)) {
+    throw new Error(`the bundled PTY runtime does not support ${platform} ${architecture}`);
   }
-
-  if (process.arch === "arm64") {
-    return {
-      helper: Buffer.from(__NODE_PTY_DARWIN_ARM64_HELPER__, "base64"),
-      module: Buffer.from(__NODE_PTY_DARWIN_ARM64_MODULE__, "base64"),
-    };
-  }
-
-  if (process.arch === "x64") {
-    return {
-      helper: Buffer.from(__NODE_PTY_DARWIN_X64_HELPER__, "base64"),
-      module: Buffer.from(__NODE_PTY_DARWIN_X64_MODULE__, "base64"),
-    };
-  }
-
-  throw new Error(`the bundled PTY runtime does not support macOS ${process.arch}`);
+  return key;
 }
 
-function ensureAsset(filePath: string, expected: Buffer, mode: number): void {
+function getFilesForCurrentPlatform(): BundledRuntimeFile[] {
+  const key = getRuntimeKey();
+  assertSupportedLinuxRuntime();
+  const definitions = __NODE_PTY_RUNTIMES__[key];
+  if (!definitions?.length) {
+    throw new Error(`the plugin bundle does not include the PTY runtime for ${key}`);
+  }
+
+  return definitions.map((file) => ({
+    contents: Buffer.from(file.contents, "base64"),
+    ...(file.mode === undefined ? {} : { mode: file.mode }),
+    path: file.path,
+  }));
+}
+
+function assertSupportedLinuxRuntime(): void {
+  if (process.platform !== "linux") {
+    return;
+  }
+
+  try {
+    const report = process.report?.getReport() as {
+      header?: { glibcVersionRuntime?: string };
+    };
+    if (report.header && !report.header.glibcVersionRuntime) {
+      throw new Error("the bundled PTY runtime supports glibc Linux only (musl is not supported)");
+    }
+  } catch (error) {
+    if (error instanceof Error && error.message.includes("glibc Linux only")) {
+      throw error;
+    }
+    // Some Electron builds disable diagnostic reports. Let the native loader report incompatibility.
+  }
+}
+
+function ensureAsset(filePath: string, expected: Buffer, mode?: number): void {
   try {
     if (readFileSync(filePath).equals(expected)) {
-      chmodSync(filePath, mode);
+      if (mode !== undefined) {
+        chmodSync(filePath, mode);
+      }
       return;
     }
   } catch (error) {
@@ -62,11 +100,14 @@ function ensureAsset(filePath: string, expected: Buffer, mode: number): void {
     }
   }
 
+  mkdirSync(path.dirname(filePath), { recursive: true });
   const temporaryPath = `${filePath}.${process.pid}.tmp`;
   try {
-    writeFileSync(temporaryPath, expected, { mode });
+    writeFileSync(temporaryPath, expected, mode === undefined ? undefined : { mode });
     renameSync(temporaryPath, filePath);
-    chmodSync(filePath, mode);
+    if (mode !== undefined) {
+      chmodSync(filePath, mode);
+    }
   } finally {
     rmSync(temporaryPath, { force: true });
   }

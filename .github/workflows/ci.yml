@@ -34,3 +34,79 @@ jobs:
 
       - name: Validate
         run: npm run validate
+
+  native-packaged:
+    name: Native smoke (${{ matrix.key }})
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - key: darwin-x64
+            runner: macos-15-intel
+          - key: darwin-arm64
+            runner: macos-15
+          - key: win32-x64
+            runner: windows-2022
+          - key: win32-arm64
+            runner: windows-11-arm
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+        env:
+          HUSKY: 0
+
+      - name: Smoke-test native PTY
+        run: npm run native:smoke
+
+      - name: Stage native runtime
+        run: node scripts/stage-node-pty-runtime.mjs
+
+  native-linux:
+    name: Native smoke (linux-${{ matrix.arch }})
+    runs-on: ${{ matrix.runner }}
+    container: ubuntu:20.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x64
+            runner: ubuntu-22.04
+          - arch: arm64
+            runner: ubuntu-22.04-arm
+
+    steps:
+      - name: Install build tools
+        run: apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y ca-certificates git g++ make python3
+
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+        env:
+          HUSKY: 0
+
+      - name: Smoke-test native PTY
+        run: npm run native:smoke
+
+      - name: Stage native runtime
+        run: node scripts/stage-node-pty-runtime.mjs

@@ -292,7 +292,7 @@ export class TerminalView extends ItemView {
           item
             .setTitle(profile.label)
             .setIcon("terminal")
-            .onClick(() => this.plugin.createTerminal(profile.path));
+            .onClick(() => this.plugin.createTerminal(profile.id));
         });
       }
     }

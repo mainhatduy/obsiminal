@@ -336,3 +336,15 @@
 .obsiminal-view .obsiminal-terminal-host .terminal.xterm .xterm-viewport {
   background: transparent;
 }
+
+.obsiminal-settings-shell {
+  margin-block: var(--size-4-4);
+  padding: var(--size-4-2) var(--size-4-4);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-m);
+}
+
+.obsiminal-settings-shell textarea {
+  min-height: 72px;
+  resize: vertical;
+}

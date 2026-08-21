@@ -1,6 +1,6 @@
 {
   "name": "obsiminal",
-  "version": "0.1.3",
+  "version": "0.2.0",
   "description": "An embedded PTY terminal for Obsidian.",
   "engines": {
     "node": ">=24"
@@ -8,12 +8,15 @@
   "main": "main.js",
   "packageManager": "npm@11.19.0",
   "scripts": {
-    "dev": "node esbuild.config.mjs",
-    "build": "npm run typecheck && node esbuild.config.mjs production",
+    "dev": "node scripts/stage-node-pty-runtime.mjs && node esbuild.config.mjs",
+    "build": "npm run typecheck && node scripts/stage-node-pty-runtime.mjs && node esbuild.config.mjs production",
+    "build:universal": "npm run typecheck && node esbuild.config.mjs production universal",
     "check": "npm run validate",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint . --max-warnings=0",
+    "native:smoke": "node scripts/native-smoke.mjs",
+    "native:verify": "node scripts/verify-node-pty-runtimes.mjs",
     "precommit": "nano-staged",
     "prepare": "husky",
     "test": "vitest run",

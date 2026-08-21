@@ -11,10 +11,22 @@ permissions:
   attestations: write
 
 jobs:
-  release:
-    name: Build release
-    runs-on: ubuntu-latest
+  runtime-packaged:
+    name: Package runtime (${{ matrix.key }})
+    runs-on: ${{ matrix.runner }}
     timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - key: darwin-x64
+            runner: macos-15-intel
+          - key: darwin-arm64
+            runner: macos-15
+          - key: win32-x64
+            runner: windows-2022
+          - key: win32-arm64
+            runner: windows-11-arm
 
     steps:
       - name: Check out repository
@@ -31,8 +43,104 @@ jobs:
         env:
           HUSKY: 0
 
-      - name: Validate and build
+      - name: Smoke-test native PTY
+        run: npm run native:smoke
+
+      - name: Stage native runtime
+        run: node scripts/stage-node-pty-runtime.mjs
+
+      - name: Upload native runtime
+        uses: actions/upload-artifact@v4
+        with:
+          name: node-pty-runtime-${{ matrix.key }}
+          path: .build/node-pty-runtimes
+          if-no-files-found: error
+
+  runtime-linux:
+    name: Package runtime (linux-${{ matrix.arch }})
+    runs-on: ${{ matrix.runner }}
+    container: ubuntu:20.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x64
+            runner: ubuntu-22.04
+          - arch: arm64
+            runner: ubuntu-22.04-arm
+
+    steps:
+      - name: Install build tools
+        run: apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y ca-certificates git g++ make python3
+
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+        env:
+          HUSKY: 0
+
+      - name: Smoke-test native PTY
+        run: npm run native:smoke
+
+      - name: Stage native runtime
+        run: node scripts/stage-node-pty-runtime.mjs
+
+      - name: Upload native runtime
+        uses: actions/upload-artifact@v4
+        with:
+          name: node-pty-runtime-linux-${{ matrix.arch }}
+          path: .build/node-pty-runtimes
+          if-no-files-found: error
+
+  release:
+    name: Build universal release
+    needs: [runtime-packaged, runtime-linux]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+        env:
+          HUSKY: 0
+
+      - name: Validate source and host build
         run: npm run validate
+
+      - name: Clear host-only runtime staging
+        run: >-
+          node -e "require('node:fs').rmSync('.build/node-pty-runtimes', { force: true, recursive: true })"
+
+      - name: Download native runtimes
+        uses: actions/download-artifact@v4
+        with:
+          pattern: node-pty-runtime-*
+          path: .build/node-pty-runtimes
+          merge-multiple: true
+
+      - name: Verify native runtimes
+        run: npm run native:verify
+
+      - name: Build universal plugin
+        run: npm run build:universal
 
       - name: Verify release version
         env:
