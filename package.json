@@ -1,6 +1,6 @@
 {
   "name": "obsiminal",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "An embedded PTY terminal for Obsidian.",
   "engines": {
     "node": ">=24"
@@ -14,8 +14,6 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint . --max-warnings=0",
-    "native:prepare": "node scripts/prepare-native.mjs",
-    "postinstall": "npm run native:prepare",
     "precommit": "nano-staged",
     "prepare": "husky",
     "test": "vitest run",

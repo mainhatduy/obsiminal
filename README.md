@@ -9,8 +9,7 @@ workflow.
 ![Vault Shell terminal running inside an Obsidian workspace](images/demo.png)
 
 > [!IMPORTANT]
-> Vault Shell 0.1.1 is an early macOS-only release that must be installed manually. It does
-> not support Obsidian Mobile and is not yet available in the Community Plugins directory.
+> Vault Shell 0.1.2 is an early macOS-only release. It does not support Obsidian Mobile.
 
 ## Features
 
@@ -29,24 +28,26 @@ workflow.
 
 ## Requirements
 
-| Requirement      | Version or details                                     |
-| ---------------- | ------------------------------------------------------ |
-| Operating system | macOS                                                  |
-| Obsidian         | 1.7.2 or later                                         |
-| Vault            | Local filesystem vault                                 |
-| Node.js          | 24 or later, required for installation and development |
-| npm              | Included with Node.js                                  |
-
-You may also need the Xcode Command Line Tools if `node-pty` must be compiled locally:
-
-```sh
-xcode-select --install
-```
+| Requirement      | Version or details             |
+| ---------------- | ------------------------------ |
+| Operating system | macOS (Intel or Apple Silicon) |
+| Obsidian         | 1.7.2 or later                 |
+| Vault            | Local filesystem vault         |
 
 ## Installation
 
-Vault Shell is not currently distributed through Obsidian's Community Plugins directory.
-Install it from source in a test vault:
+Install Vault Shell from **Settings → Community plugins**:
+
+1. Turn on community plugins if they are disabled.
+2. Select **Browse**, search for **Vault Shell**, and select **Install**.
+3. Select **Enable**.
+
+No Node.js, npm, compiler, or separate `node_modules` directory is required. The Community
+Plugins installer downloads the standard `main.js`, `manifest.json`, and `styles.css` files.
+`main.js` includes the native PTY runtimes for Intel and Apple Silicon Macs and prepares the
+matching runtime locally when the first terminal starts.
+
+To install from source in a test vault instead:
 
 ```sh
 cd "/path/to/Your Vault/.obsidian/plugins"
@@ -56,21 +57,8 @@ npm install
 npm run build
 ```
 
-Then:
-
-1. Open **Settings → Community plugins** in Obsidian.
-2. Turn on community plugins if they are disabled.
-3. Select **Vault Shell** and enable it.
-
-The plugin directory must remain named `obsiminal`. Keep `node_modules/node-pty` in the
-plugin directory because the native PTY module is intentionally loaded outside the bundled
-`main.js` file.
-
-If you installed dependencies before the native preparation script was added, run:
-
-```sh
-npm run native:prepare
-```
+The plugin directory must remain named `obsiminal`. Node.js 24 or later and npm are required
+only when building from source.
 
 ## Usage
 
@@ -109,36 +97,26 @@ own.
 To discover installed shells, Vault Shell uses the Node.js filesystem API to read
 `/etc/shells` and check whether shell paths found through `$SHELL` and `$PATH` are executable.
 These are read-only checks outside the vault; Vault Shell does not modify those files.
+When the first terminal starts, Vault Shell writes its bundled PTY runtime to the plugin's own
+`prebuilds` directory. It does not download code or dependencies.
 
 The terminal itself runs with the same permissions as Obsidian and launches a real shell at
 the vault root. Commands entered in that shell can read, change, or delete files anywhere your
 user account can access, and they may connect to the network. Review commands before running
 them and use a test vault while evaluating the plugin.
 
-## Troubleshooting native `node-pty`
+## Troubleshooting the PTY runtime
 
-`node-pty` contains a native binary. Errors such as `NODE_MODULE_VERSION`,
-`Module did not self-register`, or a failure to load `pty.node` usually mean that the binary
-was built for a different ABI than the Electron version used by Obsidian.
+If the terminal reports that `pty.node` or `spawn-helper` cannot be loaded:
 
-1. In Obsidian, open **Developer tools → Console** and run:
+1. Quit Obsidian completely.
+2. Delete the `prebuilds` directory inside
+   `<vault>/.obsidian/plugins/obsiminal/`. It contains only generated copies of the runtime
+   bundled in `main.js`.
+3. Reopen Obsidian and start a terminal so Vault Shell prepares a fresh copy.
 
-   ```js
-   process.versions.electron;
-   ```
-
-2. Rebuild `node-pty` from the plugin directory using the returned Electron version:
-
-   ```sh
-   npm install-scripts approve node-pty
-   npm rebuild node-pty \
-     --runtime=electron \
-     --target=<electron-version> \
-     --dist-url=https://electronjs.org/headers
-   npm run build
-   ```
-
-3. Quit Obsidian completely, then reopen it.
+If the problem continues, reinstall the plugin from Community Plugins to replace `main.js`,
+then report the full error and whether the Mac uses Intel or Apple Silicon.
 
 ## Development
 
@@ -181,8 +159,6 @@ build. The build writes the Obsidian plugin artifacts to the repository root:
 - Local filesystem vaults only.
 - Sessions do not survive an Obsidian restart, reload, or plugin disable.
 - Shell, font, and working-directory settings are not configurable yet.
-- Native binaries are not downloaded or rebuilt automatically.
-- Installation through the Community Plugins directory is not available yet.
 
 ## Contributing
 
@@ -191,4 +167,6 @@ Bug reports and pull requests are welcome. Before opening a pull request, run
 
 ## License
 
-Vault Shell is available under the [MIT License](LICENSE).
+Vault Shell is available under the [MIT License](LICENSE). It bundles
+[`node-pty`](https://github.com/microsoft/node-pty), which is also available under the MIT
+License; its license notice is preserved in the generated `main.js`.

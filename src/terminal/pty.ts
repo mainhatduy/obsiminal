@@ -11,12 +11,12 @@ interface NodePtyModule {
   spawn: typeof nodePtySpawn;
 }
 
-export function createNodePtySpawner(modulePath = "node-pty"): PtySpawner {
+export function createNodePtySpawner(): PtySpawner {
   return (executable, args, options): PtyProcess => {
-    // Keep the native dependency outside the bundle. Loading it lazily lets the
-    // plugin show a useful error instead of crashing during plugin startup.
-    // eslint-disable-next-line @typescript-eslint/no-require-imports -- Load the native module only when a terminal starts so plugin startup can recover from ABI errors.
-    const nodePty = require(modulePath) as NodePtyModule;
+    // Loading the bundled module lazily lets the plugin provision its native
+    // runtime first and report startup errors inside the terminal surface.
+    // eslint-disable-next-line @typescript-eslint/no-require-imports -- Keep native module initialization lazy so plugin startup can recover from load errors.
+    const nodePty = require("node-pty") as NodePtyModule;
     const spawnOptions: IPtyForkOptions | IWindowsPtyForkOptions = {
       cols: options.cols,
       cwd: options.cwd,

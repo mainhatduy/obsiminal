@@ -2,6 +2,7 @@ import { FileSystemAdapter, Notice, Platform, Plugin } from "obsidian";
 
 import type { TerminalSessionState, TerminalSummary } from "./terminal/contracts";
 import { createNodePtySpawner } from "./terminal/pty";
+import { prepareBundledNodePty } from "./terminal/pty-assets";
 import { discoverShellProfiles, type ShellProfile } from "./terminal/profiles";
 import { createTerminalLabels } from "./terminal/process-name";
 import { TerminalSession } from "./terminal/session";
@@ -253,16 +254,17 @@ export default class VaultShellPlugin extends Plugin {
       throw new Error("the current vault is not backed by a local filesystem");
     }
 
-    const nodePtyModulePath = adapter.getFullPath(
-      `${this.app.vault.configDir}/plugins/${this.manifest.id}/node_modules/node-pty`,
+    const pluginDirectory = adapter.getFullPath(
+      `${this.app.vault.configDir}/plugins/${this.manifest.id}`,
     );
+    prepareBundledNodePty(pluginDirectory);
     return new TerminalSession({
       args: profile.args,
       cwd: adapter.getBasePath(),
       env: createShellEnvironment(process.env),
       onStateChange: (state) => this.handleSessionStateChange(id, state),
       shell: profile.path,
-      spawner: createNodePtySpawner(nodePtyModulePath),
+      spawner: createNodePtySpawner(),
       surface: new XtermSurface(),
     });
   }
