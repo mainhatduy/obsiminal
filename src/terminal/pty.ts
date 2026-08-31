@@ -29,6 +29,70 @@ export function createNodePtySpawner(nativeDirectory: string): PtySpawner {
       return { dir: nativeDirectory, module: require(modulePath) as unknown };
     };
 
+    if (process.platform === "win32") {
+      // Obsidian's Electron renderer does not support Node worker_threads (V8 Worker error).
+      // node-pty on Windows uses a worker thread solely to drain ConPTY's outSocket pipe.
+      // Patch ConoutConnection to connect directly without instantiating worker_threads.Worker.
+      // eslint-disable-next-line @typescript-eslint/no-require-imports -- Patch Windows ConoutConnection before WindowsTerminal spawns.
+      const windowsConoutConnection = require("node-pty/lib/windowsConoutConnection") as {
+        ConoutConnection: unknown;
+      };
+
+      windowsConoutConnection.ConoutConnection = class InProcessConoutConnection {
+        private readonly conoutPipeName: string;
+        private readonly useConptyDll: boolean;
+        private isDisposed = false;
+        private readonly onReadyEmitter: {
+          event: (listener: () => void) => { dispose: () => void };
+          fire: () => void;
+        };
+
+        constructor(conoutPipeName: string, useConptyDll: boolean) {
+          this.conoutPipeName = conoutPipeName;
+          this.useConptyDll = useConptyDll;
+
+          const listeners: Array<() => void> = [];
+          this.onReadyEmitter = {
+            event: (listener: () => void) => {
+              listeners.push(listener);
+              return {
+                dispose: () => {
+                  const index = listeners.indexOf(listener);
+                  if (index !== -1) {
+                    listeners.splice(index, 1);
+                  }
+                },
+              };
+            },
+            fire: () => {
+              for (const listener of [...listeners]) {
+                listener();
+              }
+            },
+          };
+
+          queueMicrotask(() => {
+            this.onReadyEmitter.fire();
+          });
+        }
+
+        get onReady() {
+          return this.onReadyEmitter.event;
+        }
+
+        connectSocket(socket: { connect: (pipeName: string) => void }): void {
+          socket.connect(this.conoutPipeName);
+        }
+
+        dispose(): void {
+          if (!this.useConptyDll && this.isDisposed) {
+            return;
+          }
+          this.isDisposed = true;
+        }
+      };
+    }
+
     // eslint-disable-next-line @typescript-eslint/no-require-imports -- Keep native module initialization lazy so errors can be shown in the terminal surface.
     const nodePty = require("node-pty") as NodePtyModule;
     const spawnOptions: IPtyForkOptions | IWindowsPtyForkOptions = {
