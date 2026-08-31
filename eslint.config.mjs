@@ -7,9 +7,9 @@ export default tseslint.config(
   },
   ...obsidianmd.configs.recommended,
   {
-    files: ["scripts/**/*.mjs"],
+    files: ["scripts/**/*.mjs", "tests/**/*.ts"],
     rules: {
-      // Build and CI scripts run in Node.js, not in an Obsidian renderer window.
+      // Build, CI scripts, and unit tests run in Node.js, not in an Obsidian renderer window.
       "obsidianmd/prefer-window-timers": "off",
     },
   },
