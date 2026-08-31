@@ -50,7 +50,7 @@ jobs:
         run: npm run native:smoke
 
       - name: Upload native runtime
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: node-pty-runtime-${{ matrix.key }}
           path: .build/node-pty-runtimes
@@ -95,7 +95,7 @@ jobs:
         run: npm run native:smoke
 
       - name: Upload native runtime
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: node-pty-runtime-linux-${{ matrix.arch }}
           path: .build/node-pty-runtimes
@@ -130,7 +130,7 @@ jobs:
           node -e "require('node:fs').rmSync('.build/node-pty-runtimes', { force: true, recursive: true })"
 
       - name: Download native runtimes
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           pattern: node-pty-runtime-*
           path: .build/node-pty-runtimes
